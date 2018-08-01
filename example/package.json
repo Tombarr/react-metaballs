@@ -1,0 +1,21 @@
+{
+  "name": "react-metaballs-example",
+  "homepage": "https://Tombarr.github.io/react-metaballs",
+  "version": "0.0.0",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "d3": "^5.5.0",
+    "prop-types": "^15.6.2",
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1",
+    "react-scripts": "^1.1.4",
+    "react-metaballs": "^1.0.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  }
+}

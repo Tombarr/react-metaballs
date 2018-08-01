@@ -1,0 +1,223 @@
+<html>
+<head>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.13.0/d3.min.js" integrity="sha256-hYXbQJK4qdJiAeDVjjQ9G0D6A0xLnDQ4eJI9dkm7Fpk=" crossorigin="anonymous"></script>
+
+    <style type="text/css">
+    
+        :root {
+            background-color: black;
+            transform: scale(0.7);
+        }
+
+        g.circles + g.circles {
+            mix-blend-mode: screen;
+        }
+
+    </style>
+
+</head>
+<body>
+
+  <svg viewBox="0 0 1200 1200" preserveAspectRatio="xMidYMid slice">
+    
+    <g class="circles" stroke-opacity="0" fill-opacity="0">
+      <circle cx="200" cy="100" r="64" />
+      <circle cx="300" cy="300" r="96" />
+      <circle cx="250" cy="475" r="64" />
+      <circle cx="350" cy="675" r="128" />
+      <circle cx="600" cy="800" r="48" />
+    </g>
+
+    <g class="circles" stroke-opacity="0" fill-opacity="0">
+        <circle cx="300" cy="100" r="96" />
+        <circle cx="425" cy="300" r="48" />
+        <circle cx="450" cy="475" r="64" />
+        <circle cx="400" cy="675" r="58" />
+        <circle cx="500" cy="800" r="112" />
+    </g>
+
+  </svg>
+
+<script type="text/javascript">
+
+const getPathFromCircleGroup = (groupOfCircles) => {
+  
+  const vertically = (a, b) => a.cy - b.cy; // sort vertically
+  
+  // convert circle elements to objects with coordinates and radii
+  const getCircles = (groupOfCircles) => {
+    const circleElements = Array.prototype.slice.call(groupOfCircles.querySelectorAll("circle"))
+    return circleElements.map((circleElement) => {
+
+      let circ = {
+        cx : parseInt(circleElement.getAttribute('cx')),
+        cy : parseInt(circleElement.getAttribute('cy')),
+        r  : parseInt(circleElement.getAttribute('r'))
+      }
+      
+      circ.c = [ circ.cx, circ.cy ]
+      return circ
+    })
+  }
+
+  // get a path segment (curve + arc) between circles
+  const pathFromCircles = (c, cn, i, len, down) => {
+
+    let d = ""
+
+    // Terminal circle should draw arc all the way around
+    if (i === len - 1) {
+      d += `C ${c.h[(down) ? 0 : 3]} ${c.h[(down) ? 2 : 1]} ${c.p[(down) ? 2 : 1]} `
+      d += `A ${(down) ? c.r : c.r1}, ${(down) ? c.r : c.r1}, 0, 1, 0, ${c.p[(down) ? 3 : 0]} `
+      if (!down) d += 'Z'
+      return d;
+    }
+
+    // Starting point, move to (M)
+    if (down && i === 0)
+      d += `M ${c.p[0]} `
+
+    // Add a bezier cruve (C) and arc (A) between two circles        
+    d += `C ${c.h[(down) ? 0 : 3]} ${c.h[(down) ? 2 : 1]} ${c.p[(down) ? 2 : 1]} `
+    d += `A ${(down) ? c.r : c.r1}, ${(down) ? c.r : c.r1}, 0, 0, 0, ${cn.p[(down) ? 0 : 3]} `
+
+    return d
+  }
+
+  const xmlns = "http://www.w3.org/2000/svg"
+  const path = document.createElementNS(xmlns, "path")
+  const circles = getCircles(groupOfCircles).sort(vertically)
+  let d = ""
+    
+  let pointsAndHandles = circles.map((circle, i) => {
+
+    return (i === circles.length - 1) ? null :
+        curvesBetweenCircles(circle.r, circles[i + 1].r, circle.c, circles[i + 1].c)
+
+  })
+
+  pointsAndHandles = pointsAndHandles.filter((n) => n !== null && n !== undefined) // remove null & empty
+
+  // draw left and right segments
+  pointsAndHandles.forEach((c, i) => d += pathFromCircles(c, pointsAndHandles[i + 1], i, pointsAndHandles.length, true))
+  pointsAndHandles.reverse().forEach((c, i) => d += pathFromCircles(c, pointsAndHandles[i + 1], i, pointsAndHandles.length, false))
+  
+  path.setAttributeNS(null, "d", d)
+  
+  return path
+}
+
+const circleContainers = Array.prototype.slice.call(document.querySelectorAll("g.circles"))
+
+let metaballPath = getPathFromCircleGroup(circleContainers[0])
+let metaballPath2 = getPathFromCircleGroup(circleContainers[1])
+
+let whiteOutline = (path) => {
+    path.setAttributeNS(null, "stroke", "white")
+    path.setAttributeNS(null, "stroke-opacity", 1)
+    path.setAttributeNS(null, "fill-opacity", 1)
+    path.setAttributeNS(null, "stroke-width", 2)
+}
+
+whiteOutline(metaballPath)
+whiteOutline(metaballPath2)
+
+metaballPath.setAttributeNS(null, "fill", '#2197E4')
+metaballPath2.setAttributeNS(null, "fill", '#D092FF')
+
+circleContainers[0].appendChild(metaballPath)
+circleContainers[1].appendChild(metaballPath2)
+
+/**
+ * Based on Metaball script by SATO Hiroyuki
+ * http://shspage.com/aijs/en/#metaball
+ */
+function curvesBetweenCircles(radius1, radius2, center1, center2, handleSize = 2.4, v = 0.5) {
+  const HALF_PI = Math.PI / 2;
+  const d = dist(center1, center2);
+  let u1 = 0, u2 = 0;
+
+  if (radius1 === 0 || radius2 === 0 || d <= Math.abs(radius1 - radius2)) {
+    return null;
+  }
+
+  if (d < radius1 + radius2) {
+    u1 = Math.acos(
+      (radius1 * radius1 + d * d - radius2 * radius2) / (2 * radius1 * d),
+    );
+    u2 = Math.acos(
+      (radius2 * radius2 + d * d - radius1 * radius1) / (2 * radius2 * d),
+    );
+  }
+
+  // All the angles
+  const angleBetweenCenters = angle(center2, center1);
+  const maxSpread = Math.acos((radius1 - radius2) / d);
+
+  const angle1 = angleBetweenCenters + u1 + (maxSpread - u1) * v;
+  const angle2 = angleBetweenCenters - u1 - (maxSpread - u1) * v;
+  const angle3 = angleBetweenCenters + Math.PI - u2 - (Math.PI - u2 - maxSpread) * v;
+  const angle4 = angleBetweenCenters - Math.PI + u2 + (Math.PI - u2 - maxSpread) * v;
+  
+  // Points
+  const p1 = getVector(center1, angle1, radius1);
+  const p2 = getVector(center1, angle2, radius1);
+  const p3 = getVector(center2, angle3, radius2);
+  const p4 = getVector(center2, angle4, radius2);
+
+  // Define handle length by the
+  // distance between both ends of the curve
+  const totalRadius = radius1 + radius2;
+  const d2Base = Math.min(v * handleSize, dist(p1, p3) / totalRadius);
+
+  // Take into account when circles are overlapping
+  const d2 = d2Base * Math.min(1, d * 2 / (radius1 + radius2));
+
+  const r1 = radius1 * d2;
+  const r2 = radius2 * d2;
+
+  const h1 = getVector(p1, angle1 - HALF_PI, r1);
+  const h2 = getVector(p2, angle2 + HALF_PI, r1);
+  const h3 = getVector(p3, angle3 + HALF_PI, r2);
+  const h4 = getVector(p4, angle4 - HALF_PI, r2);
+  
+  return {
+    p : [ p1, p2, p3, p4 ],
+    h : [ h1, h2, h3, h4 ],
+    escaped : d > radius1,
+    r : radius2,
+    r1 : radius1
+  }
+}
+
+/**
+ * Utils
+ */
+function moveTo([x, y] = [0, 0], element) {
+  element.setAttribute('cx', x);
+  element.setAttribute('cy', y);
+}
+
+function line([x1, y1] = [0, 0], [x2, y2] = [0, 0], element) {
+  element.setAttribute('x1', x1);
+  element.setAttribute('y1', y1);
+  element.setAttribute('x2', x2);
+  element.setAttribute('y2', y2);
+}
+
+function dist([x1, y1], [x2, y2]) {
+  return ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5;
+}
+
+function angle([x1, y1], [x2, y2]) {
+  return Math.atan2(y1 - y2, x1 - x2);
+}
+
+function getVector([cx, cy], a, r) {
+  return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+}
+
+</script>
+
+</body>
