@@ -4,6 +4,10 @@ Data-driven React component rendering SVG metaballs, animated using d3.
 
 [![NPM](https://img.shields.io/npm/v/react-metaballs.svg)](https://www.npmjs.com/package/react-metaballs) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
+## Example
+
+See a [demo here](https://tombarr.github.io/react-metaballs/index.html)
+
 ![metaball anim](./metaball_animation.gif)
 
 ## Install
