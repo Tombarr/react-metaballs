@@ -6,7 +6,7 @@ import Metaballs from 'react-metaballs'
 
 import * as d3 from 'd3'
 
-const circles = [{
+const CIRCLES = [{
     cx: 200,
     cy: 100,
     r: 64
@@ -36,6 +36,10 @@ const circles = [{
 const INTERVAL = 2 * 1000 // 5 seconds
 
 class App extends Component {
+  state = {
+    circles: CIRCLES
+  }
+
   constructor(props) {
     super(props)
     this.metaballs = React.createRef()
@@ -48,16 +52,22 @@ class App extends Component {
       return Math.random() * (max - min) + min
     }
 
-    let newCircles = circles.slice(0).map((circle) => ({
+    let newCircles = CIRCLES.slice(0).map((circle) => ({
       cx: Math.round(circle.cx * getRandomArbitrary(0.9, 1.1)),
       cy: Math.round(circle.cy * getRandomArbitrary(0.9, 1.1)),
       r: Math.round(circle.r * getRandomArbitrary(0.66, 1.33))
     }))
 
-    this.metaballs.current.updateCircles(newCircles)
+    this.setState({
+      circles: newCircles
+    })
   }
 
   render() {
+    let {
+      circles
+    } = this.state
+
     return (
       <div className="App">
         <Metaballs

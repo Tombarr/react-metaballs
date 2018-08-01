@@ -11,6 +11,15 @@ import PropTypes from 'prop-types'
 
 let _id = 0
 
+const compareCircles = (circles, newCircles) => {
+  if (circles.length !== newCircles.length) return false
+  return circles.every((circle, index) => {
+    return (circle.cx === newCircles[index].cx &&
+      circle.cy === newCircles[index].cy &&
+      circle.r === newCircles[index].r)
+  })
+}
+
 /**
  * Metaballs: a collection of circles organically joined
  */
@@ -40,7 +49,12 @@ class Metaballs extends Component {
     this.state.id = _id++
   }
 
+  componentWillReceiveProps(nextProps) {
+    this.updateCircles(nextProps.circles)
+  }
+
   updateCircles = (newCircles) => {
+    if (compareCircles(this.props.circles, newCircles)) return
     this.setState({
       circles: newCircles
     })

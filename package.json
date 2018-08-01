@@ -1,6 +1,6 @@
 {
   "name": "react-metaballs",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Data-driven React component rendering SVG metaballs",
   "author": "Tombarr",
   "license": "MIT",
