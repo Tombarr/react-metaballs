@@ -1,6 +1,6 @@
 {
   "name": "react-metaballs",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Data-driven React component rendering SVG metaballs",
   "author": "Tombarr",
   "license": "MIT",
@@ -9,6 +9,18 @@
   "module": "dist/index.es.js",
   "jsnext:main": "dist/index.es.js",
   "private": false,
+  "keywords": [
+    "metaballs",
+    "React",
+    "d3",
+    "SVG",
+    "JavaScript",
+    "animation",
+    "transition"
+  ],
+  "bugs": {
+    "url": "https://github.com/Tombarr/react-metaballs/issues"
+  },
   "engines": {
     "node": ">=8",
     "npm": ">=5"
